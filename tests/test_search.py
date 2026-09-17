@@ -1,4 +1,31 @@
+import pytest
+
+from src.cache import Cache
+from src.gh import GhCli
 from src.search import run_search
+
+
+@pytest.fixture(autouse=True)
+def mock_gh_auth(monkeypatch, tmp_path):
+    # Ensure cache has at least one repo and GhCli reports installed/authed
+    monkeypatch.setattr(GhCli, "is_installed", staticmethod(lambda: True))
+    monkeypatch.setattr(GhCli, "check_auth", staticmethod(lambda: True))
+    db_file = tmp_path / "test.sqlite"
+    cache = Cache(db_file)
+    cache.upsert_repos([{
+        "id": "owner/repo",
+        "name": "repo",
+        "owner": "owner",
+        "description": "Mock repo",
+        "url": "https://github.com/owner/repo",
+        "is_private": 0,
+        "is_fork": 0,
+        "stars": 1,
+        "pushed_at": "2026-01-01T00:00:00Z",
+        "is_starred": 0,
+    }])
+    monkeypatch.setattr("src.search.Cache", lambda: cache)
+    yield
 
 
 def test_system_commands():
