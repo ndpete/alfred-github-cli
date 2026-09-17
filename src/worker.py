@@ -55,6 +55,33 @@ query {
 """
 
 
+GRAPHQL_ORG_REPOS_QUERY = """
+query($org: String!, $cursor: String) {
+  organization(login: $org) {
+    repositories(first: 100, after: $cursor, orderBy: {field: PUSHED_AT, direction: DESC}) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        nameWithOwner
+        name
+        description
+        url
+        isPrivate
+        isFork
+        stargazerCount
+        pushedAt
+        owner {
+          login
+        }
+      }
+    }
+  }
+}
+"""
+
+
 def sync_github_data(cache: Cache) -> bool:
     """Fetch user repos, orgs, and starred repos via GraphQL and store into SQLite."""
     if not GhCli.is_installed() or not GhCli.check_auth():
@@ -97,6 +124,39 @@ def sync_github_data(cache: Cache) -> bool:
                 "pushed_at": r.get("pushedAt") or "",
                 "is_starred": 0,
             }
+
+    # Fetch all organization repositories
+    for org in orgs:
+        org_login = org["login"]
+        cursor: str | None = None
+        while True:
+            variables: dict[str, Any] = {"org": org_login}
+            if cursor:
+                variables["cursor"] = cursor
+            org_data = GhCli.run_graphql(GRAPHQL_ORG_REPOS_QUERY, variables)
+            if not org_data or "organization" not in org_data or not org_data["organization"]:
+                break
+            repo_conn = org_data["organization"].get("repositories")
+            if not repo_conn:
+                break
+            for r in repo_conn.get("nodes", []):
+                repo_id = r["nameWithOwner"]
+                if repo_id not in repos_map:
+                    repos_map[repo_id] = {
+                        "id": repo_id,
+                        "name": r["name"],
+                        "owner": org_login,
+                        "description": r.get("description") or "",
+                        "url": r["url"],
+                        "is_private": 1 if r.get("isPrivate") else 0,
+                        "is_fork": 1 if r.get("isFork") else 0,
+                        "stars": r.get("stargazerCount", 0),
+                        "pushed_at": r.get("pushedAt") or "",
+                        "is_starred": 0,
+                    }
+            if not repo_conn.get("pageInfo", {}).get("hasNextPage"):
+                break
+            cursor = repo_conn["pageInfo"]["endCursor"]
 
     # Save starred repositories
     if "starredRepositories" in viewer and "nodes" in viewer["starredRepositories"]:

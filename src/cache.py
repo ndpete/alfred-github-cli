@@ -24,6 +24,56 @@ def get_db_path() -> Path:
     return get_data_dir() / "github.sqlite"
 
 
+def is_subsequence(sub: str, target: str) -> bool:
+    """Check if sub is a subsequence of target (characters appear in order)."""
+    it = iter(target)
+    return all(c in it for c in sub)
+
+
+def score_repo(tokens: list[str], repo: dict[str, Any]) -> int:
+    repo_id = repo["id"].lower()
+    repo_name = repo["name"].lower()
+    owner = repo["owner"].lower()
+    desc = (repo.get("description") or "").lower()
+
+    score = 0
+    for token in tokens:
+        # 1. Exact match on repo name or full ID
+        if token == repo_name or token == repo_id:
+            score += 500
+        # 2. Token starts repo_name or appears after delimiter (- or _)
+        elif repo_name.startswith(token) or f"-{token}" in repo_name or f"_{token}" in repo_name:
+            score += 300
+        # 3. Substring in repo name
+        elif token in repo_name:
+            score += 200
+        # 4. Token matches owner or appears right after org slash
+        elif token == owner or f"{token}/" in repo_id or f"/{token}" in repo_id:
+            score += 150
+        elif token in repo_id:
+            score += 100
+        # 5. Substring in description
+        elif token in desc:
+            score += 40
+        # 6. Subsequence / abbreviation match on repo name (e.g. "ghc" -> "github-cli")
+        elif is_subsequence(token, repo_name):
+            score += 25
+        # 7. Subsequence on full repo ID
+        elif is_subsequence(token, repo_id):
+            score += 15
+        else:
+            return 0
+
+    # Starred bonus
+    if repo.get("is_starred"):
+        score += 20
+    # Original (non-fork) bonus
+    if not repo.get("is_fork"):
+        score += 10
+
+    return score
+
+
 class Cache:
     """SQLite cache with WAL mode for sub-10ms Alfred queries."""
 
@@ -152,26 +202,21 @@ class Cache:
 
     def search_repos(self, query: str, limit: int = 50) -> list[dict[str, Any]]:
         query = query.strip()
-        with self._get_connection() as conn:
-            if not query:
-                rows = conn.execute(
-                    "SELECT * FROM repos ORDER BY pushed_at DESC LIMIT ?", (limit,)
-                ).fetchall()
-                return [dict(r) for r in rows]
+        all_repos = self.get_all_repos()
+        if not query:
+            return all_repos[:limit]
 
-            pattern = f"%{query}%"
-            rows = conn.execute(
-                """
-                SELECT * FROM repos
-                WHERE id LIKE ? OR description LIKE ?
-                ORDER BY
-                    CASE WHEN id LIKE ? THEN 0 ELSE 1 END,
-                    pushed_at DESC
-                LIMIT ?
-                """,
-                (pattern, pattern, f"{query}%", limit),
-            ).fetchall()
-            return [dict(r) for r in rows]
+        tokens = query.lower().split()
+        scored: list[tuple[int, str, dict[str, Any]]] = []
+        for r in all_repos:
+            s = score_repo(tokens, r)
+            if s > 0:
+                pushed = r.get("pushed_at") or ""
+                scored.append((s, pushed, r))
+
+        # Sort primarily by score DESC, secondarily by pushed_at DESC
+        scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
+        return [item[2] for item in scored[:limit]]
 
     def search_orgs(self, query: str) -> list[dict[str, Any]]:
         query = query.strip()
