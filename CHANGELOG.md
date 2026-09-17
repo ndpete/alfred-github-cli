@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/ndpete/alfred-github-cli/compare/v0.2.0...v0.3.0) (2026-09-17)
+
+
+### Features
+
+* add updater, update notifications, and enhanced system commands ([d61dc20](https://github.com/ndpete/alfred-github-cli/commit/d61dc200c0848de459c9c7ba4e73b86a069e26a9))
+* **search:** show informative banner while building initial cache ([d9b458b](https://github.com/ndpete/alfred-github-cli/commit/d9b458bba702e5f6fe665a7e3af9d29236874c09))
+
+
+### Bug Fixes
+
+* **worker:** ensure repo root in sys.path and stream user repos immediately ([7e53cc6](https://github.com/ndpete/alfred-github-cli/commit/7e53cc6750a78b3ef5c581f1328e84f4c6e4a5df))
+
 ## [0.2.0](https://github.com/ndpete/alfred-github-cli/compare/v0.1.0...v0.2.0) (2026-09-17)
 
 
