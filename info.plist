@@ -21,6 +21,32 @@
 				<false/>
 			</dict>
 		</array>
+		<key>6278AA12-DF71-4A4D-A3B0-9B2491FDB3CF</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B4E63945-81E7-4CF1-B9F2-C5E3589B1A40</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B4E63945-81E7-4CF1-B9F2-C5E3589B1A40</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Nathan Peterson</string>
@@ -104,6 +130,40 @@
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>GitHub CLI</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>B4E63945-81E7-4CF1-B9F2-C5E3589B1A40</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>triggerid</key>
+				<string>notify</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string># GitHub CLI Workflow for Alfred
@@ -140,6 +200,20 @@ A fast, lightweight Alfred workflow for GitHub powered by Python 3 and the GitHu
 			<real>320</real>
 			<key>ypos</key>
 			<real>100</real>
+		</dict>
+		<key>B4E63945-81E7-4CF1-B9F2-C5E3589B1A40</key>
+		<dict>
+			<key>xpos</key>
+			<real>560</real>
+			<key>ypos</key>
+			<real>100</real>
+		</dict>
+		<key>A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D</key>
+		<dict>
+			<key>xpos</key>
+			<real>320</real>
+			<key>ypos</key>
+			<real>240</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>

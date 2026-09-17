@@ -35,6 +35,11 @@ A fast, lightweight Alfred 5 workflow for searching GitHub and navigating reposi
 | `gh @<user>` | Filter repositories by user or organization |
 | `gh s <query>` | Global search on GitHub.com |
 | `gh > refresh` | Force refresh the local repository cache |
+| `gh > auth` | Check GitHub CLI authentication status |
+| `gh > login` | Launch Terminal with `gh auth login` to authenticate or switch accounts |
+| `gh > update` | Download and install workflow updates |
+| `gh > check-update` | Check GitHub for newer versions of this workflow |
+| `gh > version` | Display workflow and GitHub CLI versions |
 | `gh > clear-cache` | Clear the local SQLite cache |
 
 ### Keyboard Modifiers

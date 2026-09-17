@@ -35,6 +35,18 @@ def test_system_commands():
     assert items[0]["title"] == "> refresh"
     assert items[0]["arg"] == "cmd:refresh"
 
+    fb_ver = run_search("> version")
+    items_ver = fb_ver.to_dict()["items"]
+    assert len(items_ver) == 1
+    assert items_ver[0]["title"] == "> version"
+    assert items_ver[0]["arg"] == "cmd:version"
+
+    fb_auth = run_search("> auth")
+    items_auth = fb_auth.to_dict()["items"]
+    assert len(items_auth) == 1
+    assert items_auth[0]["title"] == "> auth"
+    assert items_auth[0]["arg"] == "cmd:auth"
+
 
 def test_my_commands():
     fb = run_search("my ")

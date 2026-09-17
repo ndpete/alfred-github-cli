@@ -194,6 +194,14 @@ def sync_github_data(cache: Cache, force: bool = False) -> bool:
 
         cache.upsert_repos(list(repos_map.values()))
         cache.set_meta("last_synced", str(time.time()))
+
+        # Check for workflow updates in the background
+        try:
+            from src.updater import check_for_updates
+            check_for_updates(cache)
+        except Exception:
+            pass
+
         return True
     finally:
         cache.set_meta("sync_in_progress", "0")

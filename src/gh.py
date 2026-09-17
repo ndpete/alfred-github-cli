@@ -117,3 +117,29 @@ class GhCli:
             "--json", fields,
         ])
         return res if isinstance(res, list) else []
+
+    @staticmethod
+    def get_viewer_login(timeout: float = 3.0) -> str | None:
+        """Get authenticated GitHub username."""
+        try:
+            res = GhCli.run(["api", "user", "-q", ".login"], timeout=timeout)
+            if res.returncode == 0 and res.stdout.strip():
+                return res.stdout.strip()
+        except Exception:
+            pass
+        return None
+
+    @staticmethod
+    def get_version(timeout: float = 3.0) -> str | None:
+        """Get installed gh CLI version string (e.g. '2.101.0')."""
+        try:
+            res = GhCli.run(["version"], timeout=timeout)
+            if res.returncode == 0 and res.stdout.strip():
+                first_line = res.stdout.strip().splitlines()[0]
+                parts = first_line.split()
+                if len(parts) >= 3 and parts[0] == "gh" and parts[1] == "version":
+                    return parts[2]
+                return first_line
+        except Exception:
+            pass
+        return None

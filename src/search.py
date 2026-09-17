@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
@@ -7,6 +9,7 @@ from typing import Any
 from src.cache import Cache
 from src.gh import GhCli
 from src.models import Feedback, Item, Modifier
+from src.updater import get_current_version, is_newer_version
 
 
 def spawn_background_sync() -> None:
@@ -82,15 +85,40 @@ def format_org_item(org: dict[str, Any]) -> Item:
     )
 
 
-def handle_system_commands(fb: Feedback, query: str) -> None:
+def handle_system_commands(fb: Feedback, query: str, cache: Cache | None = None) -> None:
     sub = query.lstrip(">").strip().lower()
+    latest_ver = cache.get_meta("latest_version") if cache else None
+    current_ver = get_current_version()
+    update_available = bool(latest_ver and is_newer_version(latest_ver, current_ver))
+    viewer_user = cache.get_meta("viewer_login") if cache else None
+    auth_sub = f"✓ Logged in as @{viewer_user}" if viewer_user else "Check GitHub CLI authentication status"
+
+    gh_ver = (cache.get_meta("gh_version") if cache else None) or GhCli.get_version()
+    if gh_ver and cache:
+        cache.set_meta("gh_version", gh_ver)
+    gh_desc = f"v{gh_ver}" if gh_ver else "not installed"
+    version_sub = f"Workflow v{current_ver} • gh CLI {gh_desc}"
+
     commands = [
         ("refresh", "Force refresh cached repositories from GitHub", "cmd:refresh", "update"),
-        ("auth", "Check GitHub CLI authentication status", "cmd:auth", "settings"),
+        ("auth", auth_sub, "cmd:auth", "settings"),
+        ("login", "Log in or switch accounts in Terminal ('gh auth login')", "cmd:login", "user"),
+        ("check-update", "Check GitHub for newer versions of this workflow", "cmd:check-update", "update"),
+        ("version", version_sub, "cmd:version", "wiki"),
         ("clear-cache", "Clear local SQLite database", "cmd:clear-cache", "logout"),
     ]
+    if update_available:
+        commands.insert(0, (
+            "update",
+            f"Update workflow to v{latest_ver} (current: v{current_ver})",
+            "cmd:update",
+            "update",
+        ))
+
+    clean_sub = sub.replace("-", " ").rstrip("s")
     for name, desc, arg, icon in commands:
-        if not sub or sub in name:
+        clean_name = name.replace("-", " ").rstrip("s")
+        if not sub or clean_sub in clean_name or sub in name:
             fb.add_item(
                 Item(
                     title=f"> {name}",
@@ -239,7 +267,7 @@ def run_search(query: str) -> Feedback:
 
         # System commands (> ...) can still run even before cache is populated
         if query.startswith(">"):
-            handle_system_commands(fb, query)
+            handle_system_commands(fb, query, cache)
             return fb
 
         fb.add_item(
@@ -266,7 +294,7 @@ def run_search(query: str) -> Feedback:
 
     # 4. Handle System Commands ("> ...")
     if query.startswith(">"):
-        handle_system_commands(fb, query)
+        handle_system_commands(fb, query, cache)
         return fb
 
     # 5. Handle "my" Commands ("my pulls", "my issues", etc.)
@@ -313,7 +341,19 @@ def run_search(query: str) -> Feedback:
                     valid=True,
                 )
             )
-            return fb
+    # Check for workflow update banner when no query is typed
+    latest_ver = cache.get_meta("latest_version")
+    current_ver = get_current_version()
+    if not query and latest_ver and is_newer_version(latest_ver, current_ver):
+        fb.add_item(
+            Item(
+                title=f"Update Available: v{latest_ver}",
+                subtitle=f"Press Enter to download and install now (current: v{current_ver})",
+                arg="cmd:update",
+                icon="update",
+                valid=True,
+            )
+        )
 
     # 9. Default Search: Repositories & Organizations
     repos = cache.search_repos(query, limit=30)
