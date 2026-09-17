@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.github.ndpete.alfred-github-cli</string>
+	<key>category</key>
+	<string>Productivity</string>
+	<key>connections</key>
+	<dict>
+		<key>1CAB0587-39BE-423A-A589-A751F20833BB</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6278AA12-DF71-4A4D-A3B0-9B2491FDB3CF</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Nathan Peterson</string>
+	<key>description</key>
+	<string>GitHub workflow wrapping the gh CLI in pure Python</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>GitHub CLI</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>{var:hotkey}</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>2</integer>
+				<key>runningsubtext</key>
+				<string>Searching GitHub...</string>
+				<key>script</key>
+				<string>/usr/bin/python3 -m src.search "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Search repositories, pull requests, issues, and organizations</string>
+				<key>title</key>
+				<string>Search GitHub</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>1CAB0587-39BE-423A-A589-A751F20833BB</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/usr/bin/python3 -m src.action "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>6278AA12-DF71-4A4D-A3B0-9B2491FDB3CF</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string># GitHub CLI Workflow for Alfred
+
+A fast, lightweight Alfred workflow for GitHub powered by Python 3 and the GitHub CLI (`gh`).
+
+## Prerequisites
+- macOS with Python 3 (installed by default or Xcode command line tools)
+- GitHub CLI installed and authenticated:
+  `brew install gh &amp;&amp; gh auth login`
+
+## Usage
+- `gh &lt;repo&gt;` : Instant search over your personal, organization, and starred repositories
+- `gh &lt;repo&gt; ` (with space) : Deep repository navigation (pulls, issues, actions, commits, releases, etc.)
+- `gh my pulls` : Open your Pull Requests
+- `gh my issues` : Open your Issues
+- `gh my stars` : Browse your Starred Repositories
+- `gh @&lt;user&gt;` : Filter repositories by user or organization
+- `gh s &lt;query&gt;` : Global GitHub search
+- `gh &gt; refresh` : Force refresh local SQLite cache
+	</string>
+	<key>uidata</key>
+	<dict>
+		<key>1CAB0587-39BE-423A-A589-A751F20833BB</key>
+		<dict>
+			<key>xpos</key>
+			<real>80</real>
+			<key>ypos</key>
+			<real>100</real>
+		</dict>
+		<key>6278AA12-DF71-4A4D-A3B0-9B2491FDB3CF</key>
+		<dict>
+			<key>xpos</key>
+			<real>320</real>
+			<key>ypos</key>
+			<real>100</real>
+		</dict>
+	</dict>
+	<key>userconfigurationconfig</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>gh</string>
+				<key>placeholder</key>
+				<string>gh</string>
+				<key>required</key>
+				<true/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>The keyword used to trigger this workflow in Alfred.</string>
+			<key>label</key>
+			<string>Workflow Keyword</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>hotkey</string>
+		</dict>
+	</array>
+	<key>variables</key>
+	<dict>
+		<key>hotkey</key>
+		<string>gh</string>
+	</dict>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>version</key>
+	<string>0.1.0</string>
+	<key>webaddress</key>
+	<string>https://github.com/ndpete/alfred-github-cli</string>
+</dict>
+</plist>
