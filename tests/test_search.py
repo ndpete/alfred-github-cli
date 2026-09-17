@@ -53,3 +53,17 @@ def test_repo_subcommands():
     assert "owner/repo issues" in titles
     assert "owner/repo actions" in titles
     assert "owner/repo commits" in titles
+
+
+def test_empty_cache_shows_building_banner(monkeypatch, tmp_path):
+    empty_db = tmp_path / "empty.sqlite"
+    empty_cache = Cache(empty_db)
+    monkeypatch.setattr("src.search.Cache", lambda: empty_cache)
+    monkeypatch.setattr("src.search.spawn_background_sync", lambda: None)
+
+    fb = run_search("test")
+    items = fb.to_dict()["items"]
+    assert items[0]["title"] == "Building initial repository cache..."
+    assert items[0]["valid"] is False
+    assert items[1]["title"] == "Search GitHub for 'test'"
+

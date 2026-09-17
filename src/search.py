@@ -230,8 +230,33 @@ def run_search(query: str) -> Feedback:
             )
             return fb
 
-        from src.worker import sync_github_data
-        sync_github_data(cache)
+        # Spawn background sync so Alfred returns instantly (<10ms)
+        spawn_background_sync()
+
+        # System commands (> ...) can still run even before cache is populated
+        if query.startswith(">"):
+            handle_system_commands(fb, query)
+            return fb
+
+        fb.add_item(
+            Item(
+                title="Building initial repository cache...",
+                subtitle="Fetching your GitHub repositories in the background. Results will appear in a few seconds.",
+                valid=False,
+                icon="update",
+            )
+        )
+        if query:
+            fb.add_item(
+                Item(
+                    title=f"Search GitHub for '{query}'",
+                    subtitle="Open search on GitHub.com in browser",
+                    arg=f"https://github.com/search?q={query}",
+                    icon="search",
+                    valid=True,
+                )
+            )
+        return fb
     elif cache.is_sync_due(max_age_seconds=1800):
         spawn_background_sync()
 
