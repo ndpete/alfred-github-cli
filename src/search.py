@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -12,10 +11,14 @@ from src.models import Feedback, Item, Modifier
 
 def spawn_background_sync() -> None:
     """Spawn worker.py as a detached background process."""
-    worker_script = Path(__file__).parent / "worker.py"
+    repo_root = str(Path(__file__).resolve().parent.parent)
+    env = os.environ.copy()
+    env["PYTHONPATH"] = f"{repo_root}:{env.get('PYTHONPATH', '')}".rstrip(":")
     try:
         subprocess.Popen(
-            [sys.executable, str(worker_script)],
+            [sys.executable, "-m", "src.worker"],
+            cwd=repo_root,
+            env=env,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             start_new_session=True,
@@ -230,8 +233,9 @@ def run_search(query: str) -> Feedback:
             )
             return fb
 
-        # Spawn background sync so Alfred returns instantly (<10ms)
-        spawn_background_sync()
+        # Spawn background sync once so Alfred returns instantly (<10ms)
+        if cache.get_meta("sync_in_progress") != "1":
+            spawn_background_sync()
 
         # System commands (> ...) can still run even before cache is populated
         if query.startswith(">"):
@@ -257,7 +261,7 @@ def run_search(query: str) -> Feedback:
                 )
             )
         return fb
-    elif cache.is_sync_due(max_age_seconds=1800):
+    elif cache.get_meta("sync_in_progress") != "1" and cache.is_sync_due(max_age_seconds=1800):
         spawn_background_sync()
 
     # 4. Handle System Commands ("> ...")

@@ -3,10 +3,16 @@ from __future__ import annotations
 import argparse
 import sys
 import time
+from pathlib import Path
 from typing import Any
 
-from src.cache import Cache
-from src.gh import GhCli
+# Ensure repo root is on sys.path so worker can be invoked directly or via subprocess
+_repo_root = str(Path(__file__).resolve().parent.parent)
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+
+from src.cache import Cache  # noqa: E402
+from src.gh import GhCli  # noqa: E402
 
 GRAPHQL_SYNC_QUERY = """
 query {
@@ -82,9 +88,13 @@ query($org: String!, $cursor: String) {
 """
 
 
-def sync_github_data(cache: Cache) -> bool:
+def sync_github_data(cache: Cache, force: bool = False) -> bool:
     """Fetch user repos, orgs, and starred repos via GraphQL and store into SQLite."""
     if not GhCli.is_installed() or not GhCli.check_auth():
+        return False
+
+    # Prevent concurrent sync processes (unless forced)
+    if not force and cache.get_meta("sync_in_progress") == "1":
         return False
 
     cache.set_meta("sync_in_progress", "1")
@@ -108,7 +118,7 @@ def sync_github_data(cache: Cache) -> bool:
                 })
         cache.upsert_orgs(orgs)
 
-        # Save user repositories
+        # Save user repositories immediately so repos appear in Alfred within ~500ms
         repos_map: dict[str, dict[str, Any]] = {}
         if "repositories" in viewer and "nodes" in viewer["repositories"]:
             for r in viewer["repositories"]["nodes"]:
@@ -126,6 +136,7 @@ def sync_github_data(cache: Cache) -> bool:
                     "pushed_at": r.get("pushedAt") or "",
                     "is_starred": 0,
                 }
+            cache.upsert_repos(list(repos_map.values()))
 
         # Fetch all organization repositories
         for org in orgs:
@@ -195,7 +206,7 @@ def main() -> None:
 
     cache = Cache()
     if args.force or cache.is_sync_due():
-        success = sync_github_data(cache)
+        success = sync_github_data(cache, force=args.force)
         if not success:
             sys.exit(1)
 
