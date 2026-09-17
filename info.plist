@@ -173,8 +173,10 @@ A fast, lightweight Alfred workflow for GitHub powered by Python 3 and the GitHu
 	</dict>
 	<key>variablesdontexport</key>
 	<array/>
+	<!-- x-release-please-start-version -->
 	<key>version</key>
 	<string>0.1.0</string>
+	<!-- x-release-please-end -->
 	<key>webaddress</key>
 	<string>https://github.com/ndpete/alfred-github-cli</string>
 </dict>

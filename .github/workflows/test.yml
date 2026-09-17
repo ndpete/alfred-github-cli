@@ -8,8 +8,6 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'icons/**'
-      - 'info.plist'
-      - 'pyproject.toml'
       - 'Makefile'
       - '.github/workflows/test.yml'
 
@@ -20,7 +18,7 @@ concurrency:
 jobs:
   build:
     name: Build & Validate
-    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    if: ${{ github.actor != 'github-actions[bot]' && !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
